@@ -2,6 +2,8 @@ const http = require('http')
 const express = require('express')
 const port = 3000
 
+const from = 'daniel.sportes@laposte.net'
+
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -16,14 +18,14 @@ const transporter = nodemailer.createTransport({
 });
 
 // async..await is not allowed in global scope, must use a wrapper
-async function email(to, site, org, sub) {
+async function email(to, sub, txt) {
   try {
     // send mail with defined transport object
     const info = await transporter.sendMail({
-      from: 'daniel.sportes@laposte.net', // sender address
+      from: from, // sender address
       to: to,
-      subject: 'AsocialApp - [' + site + '] '  + org + ' : ' + sub // Subject line
-      // text: "Hello world" // plain text body
+      subject: sub, // Subject line
+      text: txt || '' // plain text body
       // html: "<b>Hello world?</b>", // html body
     })
     return 'OK: ' + info.messageId
@@ -34,8 +36,8 @@ async function email(to, site, org, sub) {
 
 const app = express()
 
-app.get('/:site/:org/:to/:sub', async (req, res) => {
-  const r = await email(req.params.to, req.params.site, req.params.org, req.params.sub)
+app.get('/sm', async (req, res) => {
+  const r = await email(req.query.to, req.query.sub, req.query.txt || '')
   res.status(200).send(r)
 })
 
